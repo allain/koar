@@ -20,7 +20,8 @@
     "amp-each": "^1.0.1",
     "amp-map": "^1.0.1",
     "amp-values": "^1.0.1",
-    "bluebird": "^2.8.0"
+    "bluebird": "^2.8.0",
+    "wildemitter": "^1.0.1"
   },
   "devDependencies": {
     "mocha": "~1.17.0"

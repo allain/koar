@@ -12,13 +12,25 @@ describe('koar', function() {
   describe('registration', function() {
     it('should support module registration', function(done) {
       koar.register('a', function(sandbox) {
-        return {}; 
+        return {};
       }).then(done);
+    });
+    
+    it('should support multi-module registration', function(done) {
+      koar.register({
+        'a': function(sandbox) {},
+        'b': function(sandbox) {}
+      }).then(function() {
+        return koar.start();
+      }).then(function(result) {
+        assert.deepEqual(result, {a: true, b: true});
+        done();
+      });
     });
 
     it('should fail when registering the same module twice', function(done) {
       koar.register('a', function(sandbox) {
-        return {}; 
+        return {};
       }).then(function() {
         return koar.register('a', function(sandbox) {
           return {};
@@ -28,29 +40,40 @@ describe('koar', function() {
         done();
       });
     });
+
+    it('supports modules with no instance methods', function(done) {
+      koar.register('empty', function(sandbox) {
+        // do nothing
+      }).then(function() {
+        return koar.start('empty');
+      }).then(function() {
+        done();
+      }, done);
+    });
+
   });
 
-  describe('startup', function() { 
+  describe('startup', function() {
     var initialized;
 
     beforeEach(function(done) {
       initialized = {};
 
       Promise.all([
-        koar.register('a', function(sandbox) { 
-          return { 
+        koar.register('a', function(sandbox) {
+          return {
             init: function() {
               initialized.a = true;
               return true;
-            } 
+            }
           };
         }),
-        koar.register('b', function(sandbox) { 
-          return { 
+        koar.register('b', function(sandbox) {
+          return {
             init: function() {
               initialized.b = true;
               return true;
-            } 
+            }
           };
         })
       ]).then(function() {
@@ -64,14 +87,14 @@ describe('koar', function() {
         done();
       });
     });
-    
+
     it('supports starting multiple modules', function(done) {
       koar.start(['a', 'b']).then(function() {
         assert.deepEqual(initialized, {a: true, b: true});
         done();
       });
     });
-    
+
     it('supports starting all modules', function(done) {
       koar.start().then(function() {
         assert.deepEqual(initialized, {a: true, b: true});
@@ -85,7 +108,7 @@ describe('koar', function() {
         done();
       });
     });
-    
+
     it('starting missing module starts the other ones', function(done) {
       koar.start(['a', 'b', 'missing']).catch(function(result) {
         assert(result.a === true);
@@ -112,9 +135,9 @@ describe('koar', function() {
           assert.deepEqual(initialized, {slow: true});
           done();
         });
-      }); 
+      });
     });
- 
+
     it('a failing builder should initialize all but the failing one', function(done) {
       Promise.all([
         koar.register('fail1', function(sandbox) {
@@ -135,30 +158,30 @@ describe('koar', function() {
           assert(result.fail2 instanceof Error);
           done();
         });
-      }); 
+      });
     });
   });
-  
-  describe('teardown', function() { 
+
+  describe('teardown', function() {
     var destroyed;
 
     beforeEach(function(done) {
       destroyed= {};
 
       Promise.all([
-        koar.register('a', function(sandbox) { 
-          return { 
+        koar.register('a', function(sandbox) {
+          return {
             destroy: function() {
               destroyed.a = true;
-            } 
+            }
           };
         }),
-        koar.register('b', function(sandbox) { 
-          return { 
+        koar.register('b', function(sandbox) {
+          return {
             destroy: function() {
               destroyed.b = true;
               return true;
-            } 
+            }
           };
         }),
       ]).then(Promise.all([
@@ -175,14 +198,14 @@ describe('koar', function() {
         done();
       });
     });
-    
+
     it('supports stopping multiple modules', function(done) {
       koar.stop(['a', 'b']).then(function() {
         assert.deepEqual(destroyed, {a: true, b: true});
         done();
       });
     });
-    
+
     it('supports stopping all modules', function(done) {
       koar.stop().then(function() {
         assert.deepEqual(destroyed, {a: true, b: true});
@@ -196,7 +219,7 @@ describe('koar', function() {
         done();
       });
     });
-    
+
     it('stopping missing module still stops all others', function(done) {
       koar.stop(['a', 'b', 'missing']).catch(function(result) {
         assert(result.a === true);
@@ -225,7 +248,18 @@ describe('koar', function() {
           assert.deepEqual(destroyed, {slow: true});
           done();
         });
-      }); 
+      });
+    });
+  });
+
+  describe('sandbox', function() {
+    it('is made available to builer', function(done) {
+      koar.register('kid', function(sandbox) {
+        assert.equal(sandbox, koar.sandbox);
+        done();
+      }).then(function() {
+        return koar.start();
+      });
     });
   });
 });

@@ -2,15 +2,25 @@ var assert = require('assert');
 var map = require('amp-map');
 var each = require('amp-map');
 var values = require('amp-values');
-
 var Promise = require('bluebird');
+
+var Sandbox = require('./src/sandbox.js');
 
 module.exports = Koar;
 
 function Koar() {
+  var self = this;
   var modules = {};
 
+  var sandbox = this.sandbox = new Sandbox();
+
   this.register = function(name, builder) {
+    if (typeof name === 'object') {
+      return Promise.all(map(name, function(builder, name) {
+        return self.register(name, builder);
+      }));
+    }
+
     if (modules[name]) return Promise.reject(new Error('module already registered: ' + name));
 
     modules[name] = {
@@ -44,10 +54,9 @@ function Koar() {
       return Promise.resolve(true);
     }
 
-    // TODO: Make this sane
-    var sandbox = {};
+    var built = module.builder(sandbox) || {};
 
-    return Promise.resolve(new module.builder(sandbox)).then(function(instance) {
+    return Promise.resolve(built).then(function(instance) {
       if (!instance.init) {
         module.instance = instance;
         return true;
@@ -89,26 +98,26 @@ function Koar() {
       return true;
     });
   }
+}
 
-  function doAllProps(obj) {
-    var result = {};
+function doAllProps(obj) {
+  var result = {};
 
-    each(obj, function(val, name) {
-      result[name] = hopeful(val);
+  each(obj, function(val, name) {
+    result[name] = hopeful(val);
+  });
+
+  return Promise.props(result).then(function(result) {
+    var hasFailures = values(result).some(function(x) {
+      return x instanceof Error;
     });
 
-    return Promise.props(result).then(function(result) {
-      var hasFailures = values(result).some(function(x) {
-        return x instanceof Error;
-      });
-
-      if (hasFailures) {
-        throw result;
-      } else {
-        return result;
-      }
-    });
-  }
+    if (hasFailures) {
+      throw result;
+    } else {
+      return result;
+    }
+  });
 }
 
 function hopeful(promise) {
