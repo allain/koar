@@ -8,10 +8,10 @@ var Promise = require('bluebird');
 module.exports = Koar;
 
 function Koar() {
-  var modules = {};  
+  var modules = {};
 
   this.register = function(name, builder) {
-    if (modules[name]) return Promise.reject(new Error('module already registered: ' + name));    
+    if (modules[name]) return Promise.reject(new Error('module already registered: ' + name));
 
     modules[name] = {
       builder: builder,
@@ -43,10 +43,11 @@ function Koar() {
     } else if (module.instance) {
       return Promise.resolve(true);
     }
-    
-    var built = new module.builder({});
 
-    return Promise.resolve(built).then(function(instance) {
+    // TODO: Make this sane
+    var sandbox = {};
+
+    return Promise.resolve(new module.builder(sandbox)).then(function(instance) {
       if (!instance.init) {
         module.instance = instance;
         return true;
@@ -54,7 +55,7 @@ function Koar() {
 
       return Promise.resolve(instance.init()).then(function() {
         module.instance = instance;
-        return true; 
+        return true;
       });
     });
   }
@@ -81,14 +82,14 @@ function Koar() {
     } else if (!module.instance || !module.instance.destroy) {
       return Promise.resolve(true);
     }
-   
+
 
     return Promise.resolve(module.instance.destroy()).then(function() {
       module.instance = null;
-      return true; 
+      return true;
     });
   }
-  
+
   function doAllProps(obj) {
     var result = {};
 
@@ -97,10 +98,10 @@ function Koar() {
     });
 
     return Promise.props(result).then(function(result) {
-      var hasFailures = values(result).some(function(x) { 
+      var hasFailures = values(result).some(function(x) {
         return x instanceof Error;
       });
-      
+
       if (hasFailures) {
         throw result;
       } else {
@@ -114,11 +115,10 @@ function hopeful(promise) {
   return new Promise(function(resolve) {
     promise.then(resolve, function(err) {
       if (err instanceof Error) {
-        resolve(err);        
+        resolve(err);
       } else {
         resolve(new Error(err));
       }
     });
   });
 }
-
