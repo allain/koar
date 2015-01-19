@@ -1,0 +1,28 @@
+{
+  "name": "koar",
+  "version": "1.0.0",
+  "description": "Application framework built with decoupling and asynchrony in mind.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node_modules/.bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/allain/koar"
+  },
+  "keywords": [],
+  "author": "Allain Lalonde <allain.lalonde@gmail.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/allain/koar/issues"
+  },
+  "dependencies": {
+    "amp-each": "^1.0.1",
+    "amp-map": "^1.0.1",
+    "amp-values": "^1.0.1",
+    "bluebird": "^2.8.0"
+  },
+  "devDependencies": {
+    "mocha": "~1.17.0"
+  }
+}
