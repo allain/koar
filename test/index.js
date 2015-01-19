@@ -135,7 +135,7 @@ describe('koar', function() {
           assert.deepEqual(initialized, {slow: true});
           done();
         });
-      });
+      }, done);
     });
 
     it('a failing builder should initialize all but the failing one', function(done) {
@@ -158,7 +158,7 @@ describe('koar', function() {
           assert(result.fail2 instanceof Error);
           done();
         });
-      });
+      }, done);
     });
   });
 

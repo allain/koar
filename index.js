@@ -1,8 +1,9 @@
 var assert = require('assert');
 var map = require('amp-map');
-var each = require('amp-map');
+var each = require('amp-each');
 var values = require('amp-values');
 var Promise = require('bluebird');
+var parallel = require('promise-parallel');
 
 var Sandbox = require('./src/sandbox.js');
 
@@ -44,7 +45,7 @@ function Koar() {
       result[name] = startModule(modules[name]);
     });
 
-    return doAllProps(result);
+    return parallel(result);
   };
 
   function startModule(module) {
@@ -82,7 +83,7 @@ function Koar() {
       result[name] = stopModule(modules[name]);
     });
 
-    return doAllProps(result);
+    return parallel(result);
   };
 
   function stopModule(module) {
@@ -98,36 +99,4 @@ function Koar() {
       return true;
     });
   }
-}
-
-function doAllProps(obj) {
-  var result = {};
-
-  each(obj, function(val, name) {
-    result[name] = hopeful(val);
-  });
-
-  return Promise.props(result).then(function(result) {
-    var hasFailures = values(result).some(function(x) {
-      return x instanceof Error;
-    });
-
-    if (hasFailures) {
-      throw result;
-    } else {
-      return result;
-    }
-  });
-}
-
-function hopeful(promise) {
-  return new Promise(function(resolve) {
-    promise.then(resolve, function(err) {
-      if (err instanceof Error) {
-        resolve(err);
-      } else {
-        resolve(new Error(err));
-      }
-    });
-  });
 }
