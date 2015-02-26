@@ -6,7 +6,7 @@ Application framework built with decoupling and asynchrony in mind.
 
 Based on [core.js](https://github.com/mauriciosoares/core.js) but with a strong emphasis on asynchrony.
 
-I'm not sure how useful this library will be, but it thought I'd learn something through the process of writing it.
+I'm not sure how useful this library will be, but I thought I'd learn something through the process of writing it.
 
 [![build status](https://secure.travis-ci.org/allain/koar.png)](http://travis-ci.org/allain/koar)
 
