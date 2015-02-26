@@ -21,8 +21,7 @@
     "amp-map": "^1.0.1",
     "amp-values": "^1.0.1",
     "bluebird": "^2.8.0",
-    "promise-parallel": "^1.0.0",
-    "wildemitter": "^1.0.1"
+    "promise-parallel": "^1.0.0"
   },
   "devDependencies": {
     "mocha": "~1.17.0"

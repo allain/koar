@@ -253,12 +253,37 @@ describe('koar', function() {
   });
 
   describe('sandbox', function() {
-    it('is made available to builer', function(done) {
+    it('is made available to builder', function(done) {
       koar.register('kid', function(sandbox) {
         assert.equal(sandbox, koar.sandbox);
         done();
       }).then(function() {
         return koar.start();
+      }, done);
+    });
+
+    it.skip('supports dispatching', function(done) {
+      koar.register({
+        'a': function(sandbox) {
+          return {
+            hello: function() {
+              return 'Hello from A';
+            }
+          };
+        }, 
+        'b': function(sandbox) {
+          return {
+            hello: function() {
+              return 'Hello from B';
+            }
+          };
+        }, 
+      }).then(function() {
+        return koar.start();
+      }).then(function() {
+        return koar.sandbox.hello();
+      }).then(function(result) {
+        assert.deepEqual({a: 'Hello from A', b: 'Hello from B'}, result);
       });
     });
   });

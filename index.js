@@ -23,10 +23,10 @@ function Koar() {
     }
 
     if (modules[name]) return Promise.reject(new Error('module already registered: ' + name));
-
+    
     modules[name] = {
-      builder: builder,
-      instance: null
+      instance: null,
+      builder: builder
     };
 
     return Promise.resolve();
@@ -42,7 +42,7 @@ function Koar() {
     var result = {};
 
     each(target, function(name) {
-      result[name] = startModule(modules[name]);
+      result[name] = startModule(modules[name], this.sandbox);
     });
 
     return parallel(result);
@@ -51,22 +51,25 @@ function Koar() {
   function startModule(module) {
     if (!module) {
       return Promise.reject(new Error('missing module'));
-    } else if (module.instance) {
+    }
+
+    if (module.instance) {
       return Promise.resolve(true);
     }
 
-    var built = module.builder(sandbox) || {};
+    return Promise.resolve(module.builder(sandbox)).then(function(instance) {
+      module.instance = instance || {};
 
-    return Promise.resolve(built).then(function(instance) {
-      if (!instance.init) {
-        module.instance = instance;
-        return true;
+      if (!module.instance.init) {
+        return Promise.resolve(true);
       }
 
-      return Promise.resolve(instance.init()).then(function() {
-        module.instance = instance;
-        return true;
-      });
+      var result = module.instance.init();
+      if (result instanceof Promise) {
+        return result; 
+      }
+
+      return Promise.resolve(result);
     });
   }
 
@@ -80,7 +83,11 @@ function Koar() {
     var result = {};
 
     each(target, function(name) {
-      result[name] = stopModule(modules[name]);
+      var stopped = stopModule(modules[name]); 
+      result[name] = stopped;
+      if (stopped && modules[name]) {
+        modules[name].instance = null;
+      }
     });
 
     return parallel(result);
@@ -89,13 +96,11 @@ function Koar() {
   function stopModule(module) {
     if (!module) {
       return Promise.reject(new Error('missing module'));
-    } else if (!module.instance || !module.instance.destroy) {
+    } else if (!module || !module.instance || !module.instance.destroy) {
       return Promise.resolve(true);
     }
 
-
     return Promise.resolve(module.instance.destroy()).then(function() {
-      module.instance = null;
       return true;
     });
   }
