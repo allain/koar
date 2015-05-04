@@ -1,6 +1,6 @@
 {
   "name": "koar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Application framework built with decoupling and asynchrony in mind.",
   "main": "index.js",
   "scripts": {
