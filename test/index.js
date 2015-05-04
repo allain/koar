@@ -262,7 +262,7 @@ describe('koar', function() {
       }, done);
     });
 
-    it.skip('supports dispatching', function(done) {
+    it('supports dispatching', function(done) {
       koar.register({
         'a': function(sandbox) {
           return {
@@ -284,7 +284,8 @@ describe('koar', function() {
         return koar.sandbox.hello();
       }).then(function(result) {
         assert.deepEqual({a: 'Hello from A', b: 'Hello from B'}, result);
-      });
+        done();
+      }, done);
     });
   });
 });

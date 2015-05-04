@@ -6,6 +6,7 @@ var Promise = require('bluebird');
 var parallel = require('promise-parallel');
 
 var Sandbox = require('./src/sandbox.js');
+var debug = require('debug')('koar');
 
 module.exports = Koar;
 
@@ -25,9 +26,12 @@ function Koar() {
     if (modules[name]) return Promise.reject(new Error('module already registered: ' + name));
     
     modules[name] = {
+      name: name,
       instance: null,
       builder: builder
     };
+
+    debug('registering module %s', name);
 
     return Promise.resolve();
   };
@@ -70,6 +74,15 @@ function Koar() {
       }
 
       return Promise.resolve(result);
+    }).then(function(result) {
+      Object.keys(module.instance).filter(function(methodName) {
+        return ['init', 'destroy'].indexOf(methodName) === -1;
+      }).forEach(function(methodName) {
+        debug('registring %s for method %s', module.name, methodName);
+        sandbox.register(methodName, module); 
+      });
+
+      return result;
     });
   }
 
